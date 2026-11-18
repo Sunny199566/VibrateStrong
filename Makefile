@@ -12,7 +12,7 @@ TWEAK_NAME = VibrateStrong
 
 VibrateStrong_FILES = Tweak.xm
 VibrateStrong_FRAMEWORKS = UIKit
-VibrateStrong_CFLAGS = -fobjc-arc
+VibrateStrong_CFLAGS = -fobjc-arc -Wno-arc-performSelector-leaks
 VibrateStrong_CXXFLAGS = -std=c++17
 
 include $(THEOS_MAKE_PATH)/tweak.mk
