@@ -4,15 +4,15 @@ THEOS_PACKAGE_SCHEME = rootless
 THEOS_DEVICE_IP = 127.0.0.1
 THEOS_DEVICE_PORT = 2222
 
-INSTALL_TARGET_PROCESSES = WeChat
+INSTALL_TARGET_PROCESSES = SpringBoard
 
 include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = VibrateStrong
+TWEAK_NAME = VibrateTest
 
-VibrateStrong_FILES = Tweak.xm
-VibrateStrong_FRAMEWORKS = UIKit
-VibrateStrong_CFLAGS = -fobjc-arc
-VibrateStrong_CXXFLAGS = -std=c++17
+VibrateTest_FILES = Tweak.xm
+VibrateTest_FRAMEWORKS = UIKit
+VibrateTest_CFLAGS = -fobjc-arc
+VibrateTest_CXXFLAGS = -std=c++17
 
 include $(THEOS_MAKE_PATH)/tweak.mk
