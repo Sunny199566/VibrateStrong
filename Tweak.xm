@@ -24,7 +24,6 @@ static void playHeavyHaptic() {
     }
 
     NSError *err = nil;
-    // 厚重大幅度猛震，低锐度，不是清脆滴答
     NSDictionary *ahapDict = @{
         @"Version": @1,
         @"Pattern": @[
@@ -60,18 +59,20 @@ static void playHeavyHaptic() {
 }
 
 static CXCallObserver *callObserver;
+static id delegateInstance;
 
 %ctor {
+    delegateInstance = [[VibrateCallDelegate alloc] init];
     callObserver = [[CXCallObserver alloc] init];
-    [callObserver setCallObserverDelegate:objc_getClass("VibrateCallDelegate") queue:dispatch_get_main_queue()];
+    // ✅ 修复这里：setDelegate:queue:
+    [callObserver setDelegate:delegateInstance queue:dispatch_get_main_queue()];
 }
 
 @interface VibrateCallDelegate : NSObject <CXCallObserverDelegate>
 @end
 @implementation VibrateCallDelegate
 - (void)callObserver:(CXCallObserver *)observer callChanged:(CXCall *)call {
-    // 检测到新来电（呼出不触发，只处理入站）
-    if (call.isOutgoing == NO && call.hasConnected == NO && call.hasEnded == NO) {
+    if (!call.isOutgoing && !call.hasConnected && !call.hasEnded) {
         playHeavyHaptic();
     }
 }
