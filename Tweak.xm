@@ -12,14 +12,17 @@ static void playStrongVibration() {
     }
 
     NSError *err = nil;
-    CHHapticEvent *event = [[CHHapticEvent alloc] initWithEventType:CHHapticEventTypeHapticContinuous relativeTime:0 duration:0.8 parameters:@[
-        [[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticIntensity value:1.0],
-        [[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticSharpness value:0.8]
-    ]];
-    CHHapticPattern *pattern = [[CHHapticPattern alloc] initWithEvents:@[event] parameters:@[] error:&err];
+    // iOS16兼容写法，用字典构造Haptic Pattern
+    NSDictionary *eventDict = @{
+        CHHapticEventParameterIDHapticEventType: CHHapticEventTypeHapticContinuous,
+        CHHapticEventParameterIDRelativeTime: @(0.0),
+        CHHapticEventParameterIDDuration: @(0.8),
+        CHHapticEventParameterIDHapticIntensity: @(1.0),
+        CHHapticEventParameterIDHapticSharpness: @(0.8)
+    };
+    CHHapticPattern *pattern = [[CHHapticPattern alloc] initWithEvents:@[eventDict] parameters:@[] error:&err];
     if (!pattern) return;
 
-    // ✅ 重点：这里改成 createPlayerWithPattern:error:
     id<CHHapticPatternPlayer> player = [sharedHapticEngine createPlayerWithPattern:pattern error:&err];
     if (player) {
         [player startAtTime:0 error:&err];
