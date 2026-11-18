@@ -24,7 +24,7 @@ static void playHeavyDoubleHaptic() {
     }
 
     NSError *err = nil;
-    // 连续两段厚重大震：0~0.35s震，间隔0.15s，0.5~0.85s再来一次
+    // 两下厚重闷震，强度拉满，低锐度，幅度大，感知极强
     NSDictionary *ahapDict = @{
         @"Version": @1,
         @"Pattern": @[
@@ -32,21 +32,21 @@ static void playHeavyDoubleHaptic() {
                 @"Event": @{
                     @"EventType": @"HapticContinuous",
                     @"Time": @0.0,
-                    @"Duration": @0.35,
+                    @"Duration": @0.38,
                     @"EventParameters": @[
                         @{@"ParameterID": @"HapticIntensity", @"ParameterValue": @1.0},
-                        @{@"ParameterID": @"HapticSharpness", @"ParameterValue": @0.10}
+                        @{@"ParameterID": @"HapticSharpness", @"ParameterValue": @0.08}
                     ]
                 }
             },
             @{
                 @"Event": @{
                     @"EventType": @"HapticContinuous",
-                    @"Time": @0.50,
-                    @"Duration": @0.35,
+                    @"Time": @0.52,
+                    @"Duration": @0.38,
                     @"EventParameters": @[
                         @{@"ParameterID": @"HapticIntensity", @"ParameterValue": @1.0},
-                        @{@"ParameterID": @"HapticSharpness", @"ParameterValue": @0.10}
+                        @{@"ParameterID": @"HapticSharpness", @"ParameterValue": @0.08}
                     ]
                 }
             }
@@ -60,7 +60,7 @@ static void playHeavyDoubleHaptic() {
     id<CHHapticPatternPlayer> player = [hapticEngine createPlayerWithPattern:pattern error:&err];
     if (player) {
         [player startAtTime:0 error:&err];
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             isPlaying = NO;
         });
     } else {
@@ -68,17 +68,9 @@ static void playHeavyDoubleHaptic() {
     }
 }
 
-// 1. APP推送通知震动（微信、QQ、各类消息通知）
+// 只保留App通知震动Hook，来电部分全部删掉
 %hook SBNotificationHapticPlayer
 - (void)playHapticForNotification:(id)notification {
-    %orig;
-    playHeavyDoubleHaptic();
-}
-%end
-
-// 2. 来电震动（静音来电、响铃来电，全部走这里）
-%hook SBRingerHapticPlayer
-- (void)playRingerHaptic {
     %orig;
     playHeavyDoubleHaptic();
 }
