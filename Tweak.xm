@@ -5,7 +5,7 @@
 static CHHapticEngine *hapticEngine = nil;
 static BOOL isPlaying = NO;
 
-static void playHeavyDoubleHaptic() {
+static void playMaxHeavyHaptic() {
     if (isPlaying) return;
     isPlaying = YES;
 
@@ -24,7 +24,7 @@ static void playHeavyDoubleHaptic() {
     }
 
     NSError *err = nil;
-    // 两下厚重闷震，强度拉满，低锐度，幅度大，感知极强
+    // 连续两段厚重闷震，强度拉满，低锐度，感知极强
     NSDictionary *ahapDict = @{
         @"Version": @1,
         @"Pattern": @[
@@ -32,21 +32,21 @@ static void playHeavyDoubleHaptic() {
                 @"Event": @{
                     @"EventType": @"HapticContinuous",
                     @"Time": @0.0,
-                    @"Duration": @0.38,
+                    @"Duration": @0.40,
                     @"EventParameters": @[
                         @{@"ParameterID": @"HapticIntensity", @"ParameterValue": @1.0},
-                        @{@"ParameterID": @"HapticSharpness", @"ParameterValue": @0.08}
+                        @{@"ParameterID": @"HapticSharpness", @"ParameterValue": @0.06}
                     ]
                 }
             },
             @{
                 @"Event": @{
                     @"EventType": @"HapticContinuous",
-                    @"Time": @0.52,
-                    @"Duration": @0.38,
+                    @"Time": @0.55,
+                    @"Duration": @0.40,
                     @"EventParameters": @[
                         @{@"ParameterID": @"HapticIntensity", @"ParameterValue": @1.0},
-                        @{@"ParameterID": @"HapticSharpness", @"ParameterValue": @0.08}
+                        @{@"ParameterID": @"HapticSharpness", @"ParameterValue": @0.06}
                     ]
                 }
             }
@@ -60,7 +60,7 @@ static void playHeavyDoubleHaptic() {
     id<CHHapticPatternPlayer> player = [hapticEngine createPlayerWithPattern:pattern error:&err];
     if (player) {
         [player startAtTime:0 error:&err];
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             isPlaying = NO;
         });
     } else {
@@ -68,10 +68,10 @@ static void playHeavyDoubleHaptic() {
     }
 }
 
-// 只保留App通知震动Hook，来电部分全部删掉
-%hook SBNotificationHapticPlayer
-- (void)playHapticForNotification:(id)notification {
+// 替换通知反馈，不再使用SBNotificationHapticPlayer
+%hook UINotificationFeedbackGenerator
+- (void)notificationOccurred:(long long)type {
     %orig;
-    playHeavyDoubleHaptic();
+    playMaxHeavyHaptic();
 }
 %end
