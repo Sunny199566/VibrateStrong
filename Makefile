@@ -1,5 +1,5 @@
 ARCHS = arm64e
-TARGET = iphone:clang:17.0:17.0
+TARGET = iphone:clang:16.5:16.5
 THEOS_PACKAGE_SCHEME = rootless
 THEOS_DEVICE_IP = 127.0.0.1
 THEOS_DEVICE_PORT = 2222
