@@ -1,16 +1,22 @@
 #import <substrate.h>
 #import <CoreHaptics/CoreHaptics.h>
-#import <notify.h>
+#import <CallKit/CallKit.h>
 
 static CHHapticEngine *hapticEngine = nil;
+static BOOL isPlaying = NO;
 
 static void playHeavyHaptic() {
+    if (isPlaying) return;
+    isPlaying = YES;
+    
     if (!hapticEngine) {
         NSError *err = nil;
         hapticEngine = [[CHHapticEngine alloc] initAndReturnError:&err];
-        if (!hapticEngine) return;
-        [hapticEngine startAndReturnError:nil];
-        // 引擎自动重启，防止被系统挂掉
+        if (!hapticEngine) {
+            isPlaying = NO;
+            return;
+        }
+        [hapticEngine startAndReturnError:&err];
         hapticEngine.stoppedHandler = ^(CHHapticEngineStoppedReason reason) {
             NSError *e;
             [hapticEngine startAndReturnError:&e];
@@ -18,7 +24,7 @@ static void playHeavyHaptic() {
     }
 
     NSError *err = nil;
-    // AHAP字典，原生iOS13+支持，持续强震，满强度，低锐度=厚重大幅度震动（不是清脆滴答）
+    // 厚重大幅度猛震，低锐度，不是清脆滴答
     NSDictionary *ahapDict = @{
         @"Version": @1,
         @"Pattern": @[
@@ -26,10 +32,10 @@ static void playHeavyHaptic() {
                 @"Event": @{
                     @"EventType": @"HapticContinuous",
                     @"Time": @0.0,
-                    @"Duration": @0.6,
+                    @"Duration": @0.7,
                     @"EventParameters": @[
                         @{@"ParameterID": @"HapticIntensity", @"ParameterValue": @1.0},
-                        @{@"ParameterID": @"HapticSharpness", @"ParameterValue": @0.15}
+                        @{@"ParameterID": @"HapticSharpness", @"ParameterValue": @0.12}
                     ]
                 }
             }
@@ -37,24 +43,36 @@ static void playHeavyHaptic() {
     };
 
     CHHapticPattern *pattern = [[CHHapticPattern alloc] initWithDictionary:ahapDict error:&err];
-    if (!pattern) return;
+    if (!pattern) {
+        isPlaying = NO;
+        return;
+    }
 
     id<CHHapticPatternPlayer> player = [hapticEngine createPlayerWithPattern:pattern error:&err];
     if (player) {
         [player startAtTime:0 error:&err];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.8 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            isPlaying = NO;
+        });
+    } else {
+        isPlaying = NO;
     }
 }
 
-static int ringNotifyToken;
-static int silentVibrateNotifyToken;
+static CXCallObserver *callObserver;
 
 %ctor {
-    // 响铃来电
-    notify_register_dispatch("com.apple.springboard.ringer-start", &ringNotifyToken, dispatch_get_main_queue(), ^(int token) {
-        playHeavyHaptic();
-    });
-    // 静音模式来电震动
-    notify_register_dispatch("com.apple.springboard.incoming-call-vibrate", &silentVibrateNotifyToken, dispatch_get_main_queue(), ^(int token) {
-        playHeavyHaptic();
-    });
+    callObserver = [[CXCallObserver alloc] init];
+    [callObserver setCallObserverDelegate:objc_getClass("VibrateCallDelegate") queue:dispatch_get_main_queue()];
 }
+
+@interface VibrateCallDelegate : NSObject <CXCallObserverDelegate>
+@end
+@implementation VibrateCallDelegate
+- (void)callObserver:(CXCallObserver *)observer callChanged:(CXCall *)call {
+    // 检测到新来电（呼出不触发，只处理入站）
+    if (call.isOutgoing == NO && call.hasConnected == NO && call.hasEnded == NO) {
+        playHeavyHaptic();
+    }
+}
+@end
