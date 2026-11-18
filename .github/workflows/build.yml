@@ -20,11 +20,11 @@ jobs:
         echo "$THEOS/bin" >> $GITHUB_PATH
         git clone --recursive https://github.com/theos/theos.git $THEOS
 
-    - name: Checkout SDK iPhoneOS17.0.sdk (sparse checkout)
+    - name: Checkout SDK iPhoneOS16.5.sdk (sparse checkout)
       uses: actions/checkout@v4
       with:
         repository: theos/sdks
-        sparse-checkout: iPhoneOS17.0.sdk
+        sparse-checkout: iPhoneOS16.5.sdk
         path: theos/sdks
 
     - name: Compile Tweak (Deb)
