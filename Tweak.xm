@@ -1,5 +1,6 @@
 #import <substrate.h>
 #import <CoreHaptics/CoreHaptics.h>
+#include <dispatch/dispatch.h>
 
 static CHHapticEngine *hapticEngine = nil;
 static BOOL isPlaying = NO;
