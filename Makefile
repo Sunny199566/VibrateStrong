@@ -11,7 +11,7 @@ include $(THEOS)/makefiles/common.mk
 TWEAK_NAME = VibrateStrong
 
 VibrateStrong_FILES = Tweak.xm
-VibrateStrong_FRAMEWORKS = UIKit AudioToolbox
+VibrateStrong_FRAMEWORKS = UIKit AudioToolbox CoreHaptics
 VibrateStrong_CFLAGS = -fobjc-arc
 VibrateStrong_CXXFLAGS = -std=c++17
 
