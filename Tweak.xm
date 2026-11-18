@@ -2,8 +2,13 @@
 #import <CoreHaptics/CoreHaptics.h>
 #import <CallKit/CallKit.h>
 
+@interface VibrateCallDelegate : NSObject <CXCallObserverDelegate>
+@end
+
 static CHHapticEngine *hapticEngine = nil;
 static BOOL isPlaying = NO;
+static CXCallObserver *callObserver;
+static id delegateInstance;
 
 static void playHeavyHaptic() {
     if (isPlaying) return;
@@ -58,18 +63,6 @@ static void playHeavyHaptic() {
     }
 }
 
-static CXCallObserver *callObserver;
-static id delegateInstance;
-
-%ctor {
-    delegateInstance = [[VibrateCallDelegate alloc] init];
-    callObserver = [[CXCallObserver alloc] init];
-    // ✅ 修复这里：setDelegate:queue:
-    [callObserver setDelegate:delegateInstance queue:dispatch_get_main_queue()];
-}
-
-@interface VibrateCallDelegate : NSObject <CXCallObserverDelegate>
-@end
 @implementation VibrateCallDelegate
 - (void)callObserver:(CXCallObserver *)observer callChanged:(CXCall *)call {
     if (!call.isOutgoing && !call.hasConnected && !call.hasEnded) {
@@ -77,3 +70,9 @@ static id delegateInstance;
     }
 }
 @end
+
+%ctor {
+    delegateInstance = [[VibrateCallDelegate alloc] init];
+    callObserver = [[CXCallObserver alloc] init];
+    [callObserver setDelegate:delegateInstance queue:dispatch_get_main_queue()];
+}
