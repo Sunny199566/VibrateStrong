@@ -8,14 +8,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Theos
+      - name: Install Theos official
         run: |
           export THEOS=$HOME/theos
-          git clone --recursive https://github.com/theos/theos.git $THEOS
-          # 使用官方脚本拉取SDK，代替手动clone，不会冲突
-          cd $THEOS
-          ./bin/fetch_sdks iPhoneOS17.0.sdk
-      
+          bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
+          # 拉取 iOS17.0 SDK
+          $THEOS/bin/install-sdk iPhoneOS17.0.sdk
+
       - name: Build Tweak
         env:
           THEOS: $HOME/theos
