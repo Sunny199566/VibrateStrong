@@ -1,0 +1,9 @@
+Package: com.xxx.vibratestrong
+Name: VibrateStrong
+Version: 1.0
+Architecture: iphoneos-arm64e
+Description: 增强来电、App通知震动强度，iOS17 rootless，NathanLR兼容
+Maintainer: You
+Author: You
+Section: Tweaks
+Depends: mobilesubstrate, preferenceloader
