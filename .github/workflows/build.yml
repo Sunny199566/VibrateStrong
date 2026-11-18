@@ -1,27 +1,33 @@
 name: Build VibrateStrong
 on:
   push:
+    branches: [ main ]
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: macos-latest
+    
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Theos official
-        run: |
-          export THEOS=$HOME/theos
-          bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
-          # 拉取 iOS17.0 SDK
-          $THEOS/bin/install-sdk iPhoneOS17.0.sdk
-
-      - name: Build Tweak
-        env:
-          THEOS: $HOME/theos
-        run: |
-          make clean package THEOS_PACKAGE_SCHEME=rootless
+    - name: Checkout code
+      uses: actions/checkout@v4
       
-      - name: Upload deb
-        uses: actions/upload-artifact@v4
-        with:
-          path: packages/*.deb
+    - name: Setup Theos
+      run: |
+        brew install ldid dpkg
+        export THEOS="${{ github.workspace }}/theos"
+        echo "THEOS=$THEOS" >> $GITHUB_ENV
+        echo "$THEOS/bin" >> $GITHUB_PATH
+        git clone --recursive https://github.com/theos/theos.git $THEOS
+        rm -rf $THEOS/sdks
+        git clone --depth 1 https://github.com/theos/sdks.git $THEOS/sdks
+
+    - name: Compile Tweak (Deb)
+      run: |
+        make package THEOS_PACKAGE_SCHEME=rootless FINALPACKAGE=1
+
+    - name: Upload Deb
+      uses: actions/upload-artifact@v4
+      with:
+        name: VibrateStrong-Deb
+        path: packages/*.deb
