@@ -1,5 +1,6 @@
 #import <substrate.h>
 #import <AudioToolbox/AudioToolbox.h>
+#import <notify.h>
 
 static void playStrongVibration() {
     AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
@@ -8,9 +9,11 @@ static void playStrongVibration() {
     });
 }
 
-%hook RingtoneManager
-- (void)vibrate {
-    %orig;
-    playStrongVibration();
+static int notifyToken;
+
+%ctor {
+    // 监听来电响铃通知，SpringBoard内广播
+    notify_register_dispatch("com.apple.springboard.ringer-start", &notifyToken, dispatch_get_main_queue(), ^(int token) {
+        playStrongVibration();
+    });
 }
-%end
